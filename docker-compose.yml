@@ -1,0 +1,30 @@
+version: "3.7"
+services:
+  mongo_db:
+    image: mongo:4.2.12
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+      MONGO_INITDB_DATABASE: books
+    ports:
+      - 27017:27017
+    volumes:
+      - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./tmp/data:/data/db
+
+  mongo_express:
+    image: mongo-express:0.54.0
+    environment:
+      - ME_CONFIG_OPTIONS_EDITORTHEME=default
+      - ME_CONFIG_MONGODB_SERVER=mongo_db
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+    env_file:
+      - .env
+    ports:
+      - "8081:8081"
+    restart: on-failure
+    depends_on:
+      - mongo_db
+    links:
+      - mongo_db
