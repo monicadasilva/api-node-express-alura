@@ -23,24 +23,42 @@ db.auth({
 
 // Create collection
 db.createCollection("books_list", { capped: false });
+db.createCollection("authors", { capped: false });
 
-db.books_list.insertMany([
+db.authors.insertMany([
   {
-    book: "book1",
-    author: "helpdev",
-    publisher: "EVENT_A",
-    pages: 125,
+    author: "Author I",
+    country: "Nationality I",
   },
   {
-    book: "book2",
-    author: "helpdev",
-    publisher: "EVENT_B",
-    pages: 123,
+    author: "Author II",
+    country: "Nationality II",
   },
   {
-    book: "book3",
-    author: "github",
-    publisher: "EVENT_C",
-    pages: 254,
+    author: "Author III",
+    country: "Nationality III",
+  },
+]);
+
+db.createCollection("publishers", { capped: false });
+
+db.publishers.insertMany([
+  {
+    publisher: "Publisher I",
+    country: "Country I",
+    state: "State I",
+    city: "City I",
+  },
+  {
+    publisher: "Publisher II",
+    country: "Country II",
+    state: "State II",
+    city: "City II",
+  },
+  {
+    publisher: "Publisher III",
+    country: "Country III",
+    state: "State III",
+    city: "City III",
   },
 ]);
