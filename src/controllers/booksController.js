@@ -1,88 +1,84 @@
 import books from "../models/Books.js";
 
 class BooksController {
-  static booksList = (req, res) => {
-    books
-      .find()
-      .populate("author")
-      .populate("publisher", "name")
-      .exec((err, books) => {
-        res.status(200).json(books);
-      });
+  static booksList = async (req, res, next) => {
+    try {
+      const booksList = await books
+        .find()
+        .populate("author")
+        .populate("publisher", "name")
+        .exec();
+      res.status(200).json(booksList);
+    } catch (err) {
+      next(err);
+    }
   };
 
-  static bookById = (req, res) => {
-    const id = req.params.id;
-
-    books
-      .findById(id)
-      .populate("author", "name")
-      .populate("publisher", "name")
-      .exec((err, books) => {
-        if (err) {
-          res
-            .status(400)
-            .send({ message: `Book id not found - ${err.message}` });
-        } else {
-          res.status(200).send(books);
-        }
-      });
-  };
-
-  static bookPublisher = (req, res) => {
-    const publisher = req.query.publisher;
-
-    books.find({ publisher: publisher }, {}, (err, books) => {
-      if (err) {
-        res
-          .status(400)
-          .send({ message: `Publisher id not found - ${err.message}` });
-      } else {
-        res.status(200).send(books);
+  static bookById = async (req, res, next) => {
+    try {
+      const id = req.params.id;
+      const bookId = await books
+        .findById(id)
+        .populate("author", "name")
+        .populate("publisher", "name")
+        .exec();
+      if (bookId == null) {
+        res.status(404).send({ message: "Book id not found." });
       }
-    });
+      res.status(200).send(bookId);
+    } catch (err) {
+      next(err);
+    }
   };
 
-  static insertBook = (req, res) => {
-    let book = new books(req.body);
-
-    book.save((err) => {
-      if (err) {
-        res
-          .status(500)
-          .send({ message: `${err.message} - Fail to insert book.` });
-      } else {
-        res.status(201).send(book.toJSON());
-      }
-    });
+  static bookPublisher = async (req, res, next) => {
+    try {
+      const publisher = req.query.publisher;
+      await books.find({ publisher: publisher }, {});
+      res.status(200).send(books);
+    } catch (err) {
+      next(err);
+    }
   };
 
-  static updateBookById = (req, res) => {
-    const id = req.params.id;
+  static insertBook = async (req, res, next) => {
+    try {
+      let book = new books(req.body);
 
-    books.findByIdAndUpdate(id, { $set: req.body }, (err) => {
-      if (!err) {
-        res.status(200).send({ message: "Book successfully updated." });
-      } else {
-        res
-          .status(500)
-          .send({ message: `Book id not found  - ${err.message}` });
-      }
-    });
+      await book.save();
+      res.status(201).send(book.toJSON());
+    } catch (err) {
+      next(err);
+    }
   };
 
-  static deleteBookById = (req, res) => {
-    const id = req.params.id;
+  static updateBookById = async (req, res, next) => {
+    try {
+      const id = req.params.id;
 
-    books.findByIdAndDelete(id, (err) => {
-      if (!err) {
-        res.status(200).send({ message: "Book successfully deleted." });
-      } else {
-        res
-          .status(500)
-          .send({ message: `Book id not found  - ${err.message}` });
+      const bookUpdate = await books.findByIdAndUpdate(id, { $set: req.body });
+
+      if (bookUpdate == null) {
+        res.status(404).send({ message: "Book id not found." });
       }
-    });
+      res.status(200).send({ message: "Book successfully updated." });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  static deleteBookById = async (req, res, next) => {
+    try {
+      const id = req.params.id;
+
+      const bookDelete = await books.findByIdAndDelete(id);
+      if (bookDelete == null) {
+        res.status(404).send({ message: "Book id not found." });
+      }
+      res.status(200).send({ message: "Book successfully deleted." });
+    } catch (err) {
+      next(err);
+    }
   };
 }
 

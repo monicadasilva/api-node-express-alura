@@ -1,66 +1,68 @@
 import publishers from "../models/Publishers.js";
 
 class PublishersController {
-  static publishersList = (req, res) => {
-    publishers.find((err, publishers) => {
+  static publishersList = async (req, res, next) => {
+    try {
+      await publishers.find();
       res.status(200).json(publishers);
-    });
+    } catch (err) {
+      next(err);
+    }
   };
 
-  static publisherById = (req, res) => {
-    const id = req.params.id;
+  static publisherById = async (req, res, next) => {
+    try {
+      const id = req.params.id;
 
-    publishers.findById(id, (err, publishers) => {
-      if (err) {
-        res
-          .status(400)
-          .send({ message: `Publisher id not found - ${err.message}` });
-      } else {
-        res.status(200).send(publishers);
+      const publisherID = await publishers.findById(id);
+      if (publisherID == null) {
+        res.status(404).send({ message: "Publisher id not found." });
       }
-    });
+      res.status(200).send(publisherID);
+    } catch (err) {
+      next(err);
+    }
   };
 
-  static insertPublisher = (req, res) => {
-    let publisher = new publishers(req.body);
+  static insertPublisher = async (req, res, next) => {
+    try {
+      let publisher = new publishers(req.body);
 
-    publisher.save((err) => {
-      if (err) {
-        res
-          .status(500)
-          .send({ message: `${err.message} - Fail to insert publisher.` });
-      } else {
-        res.status(201).send(publisher.toJSON());
-      }
-    });
+      await publisher.save();
+      res.status(201).send(publisher.toJSON());
+    } catch (err) {
+      next(err);
+    }
   };
 
-  static updatePublisherById = (req, res) => {
-    const id = req.params.id;
+  static updatePublisherById = async (req, res, next) => {
+    try {
+      const id = req.params.id;
 
-    publishers.findByIdAndUpdate(id, { $set: req.body }, (err) => {
-      if (!err) {
-        res.status(200).send({ message: "Publisher successfully updated." });
-      } else {
-        res
-          .status(500)
-          .send({ message: `Publisher id not found  - ${err.message}` });
+      const publisherID = await publishers.findByIdAndUpdate(id, {
+        $set: req.body,
+      });
+      if (publisherID == null) {
+        res.status(404).send({ message: "Publisher id not found." });
       }
-    });
+      res.status(200).send({ message: "Publisher successfully updated." });
+    } catch (err) {
+      next(err);
+    }
   };
 
-  static deletePublisherById = (req, res) => {
-    const id = req.params.id;
+  static deletePublisherById = async (req, res, next) => {
+    try {
+      const id = req.params.id;
 
-    publishers.findByIdAndDelete(id, (err) => {
-      if (!err) {
-        res.status(200).send({ message: "Publisher successfully deleted." });
-      } else {
-        res
-          .status(500)
-          .send({ message: `Publisher id not found  - ${err.message}` });
+      const publisherID = await publishers.findByIdAndDelete(id);
+      if (publisherID == null) {
+        res.status(404).send({ message: "Publisher id not found." });
       }
-    });
+      res.status(200).send({ message: "Publisher successfully deleted." });
+    } catch (err) {
+      next(err);
+    }
   };
 }
 
